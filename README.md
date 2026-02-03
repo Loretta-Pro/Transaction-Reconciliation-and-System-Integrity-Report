@@ -101,7 +101,7 @@ rules.
 -	`/nibbs_transactions/` — raw data files used for analysis (csv)
 -	`/coralpay_transactions/` — raw data files used for analysis (csv)
 -	`/irecharge_transactions/` — raw data files used for analysis (csv)
--	`Presentation.pdf` — boardroom slide deck (16 slides)
+-	`Presentation.pdf` — boardroom slide deck (19 slides)
 -	`README.md` — this documentation
 
 ## How to Run / View
