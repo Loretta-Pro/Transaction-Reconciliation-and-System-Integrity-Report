@@ -26,7 +26,7 @@ This project focuses on reconciling transaction data to evaluate the effectivene
 •	Converted columns datatypes to DATE and TIME
 
 ## Key KPIs
-| Total Transactions Processed | 80000 |
+	| Total Transactions Processed | 80000 |
 	| Reconciled Transactions Count  | 67470 |
 	| Orphaned Value | 184,382,610 |
 	| Reconciliation Rate (%) | 84.3 |
@@ -36,10 +36,13 @@ This project focuses on reconciling transaction data to evaluate the effectivene
 
 ## Sample Snippets
 ```sql
-select count(distinct b.transaction_id) as apptranz_in_banklink
-from banklink_tranz b
-join app_tranz a on b.merchantref = a.txnref
-where a.transaction_type = 'bank_transfer';
+select count(distinct b.transaction_id) as app_banklink_nibbs		select a.txnref as orphaned_utility, a.transaction_type, a.amount, a.status, a.provider
+from banklink_tranz b												from app_tranz a
+join app_tranz a on b.merchantref = a.txnref						left join coralpay_tranz c on a.txnref = c.txnref
+join nibbs_tranz n on b.transaction_id = n.transaction_id;			left join irecharge_tranz i on a.txnref = i.txnref
+																	where a.transaction_type <> 'bank_transfer' and c.txnref is null and i.txnref is null;
+
+```
 
 ## Summary of Findings
 •	28,750 bank transfers initiated in the app successfully flows through Banklink and reaches NIBBS for final settlement
