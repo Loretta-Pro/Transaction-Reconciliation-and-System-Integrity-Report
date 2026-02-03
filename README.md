@@ -26,13 +26,15 @@ This project focuses on reconciling transaction data to evaluate the effectivene
 •	Converted columns datatypes to DATE and TIME
 
 ## Key KPIs
-|Total Transactions Processed| 80000 |
-|Reconciled Transactions Count | 67470 |	
-|Orphaned Value | 184,382,610 |	
-|Reconciliation Rate (%) | 84.3 |	
-|Unreconciled transactions value | Over 270million |
-|Provider Failure Rate (Coralpay vs Irecharge)% | 12.0 vs 11.8 |
-|Duplicate Transactions | 93 |
+| KPI | Value |
+|-----|-------|
+| Total Transactions Processed | 80000 |
+| Reconciled Transactions Count | 67470 |	
+| Orphaned Value | 184,382,610 |	
+| Reconciliation Rate (%) | 84.3 |	
+| Unreconciled transactions value | Over 270million |
+| Provider Failure Rate (Coralpay vs Irecharge)% | 12.0 vs 11.8 |
+| Duplicate Transactions | 93 |
 
 	
 ## Sample Snippets
