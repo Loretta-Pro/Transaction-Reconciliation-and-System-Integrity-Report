@@ -26,63 +26,66 @@ This project focuses on reconciling transaction data to evaluate the effectivene
 •	Converted columns datatypes to DATE and TIME
 
 ## Key KPIs
-	| Total Transactions Processed | 80000 |
-	| Reconciled Transactions Count  | 67470 |
-	| Orphaned Value | 184,382,610 |
-	| Reconciliation Rate (%) | 84.3 |
-	| Unreconciled transactions value | Over 270million |
-	| Provider Failure Rate (Coralpay vs Irecharge)% | 12.0 vs 11.8 |
-	| Duplicate Transactions | 93 |
+| Total Transactions Processed | 80000 |
+| Reconciled Transactions Count | 67470 |	
+| Orphaned Value | 184,382,610 |	
+| Reconciliation Rate (%) | 84.3 |	
+| Unreconciled transactions value | Over 270million |
+| Provider Failure Rate (Coralpay vs Irecharge)% | 12.0 vs 11.8 |
+| Duplicate Transactions | 93 |
 
+	
 ## Sample Snippets
 ```sql
-select count(distinct b.transaction_id) as app_banklink_nibbs		select a.txnref as orphaned_utility, a.transaction_type, a.amount, a.status, a.provider
-from banklink_tranz b												from app_tranz a
+select count(distinct b.transaction_id) as app_banklink_nibbs		select a.txnref as orphaned_utility, a.transaction_type, 
+from banklink_tranz b												       a.amount, a.status, a.provider from app_tranz a
 join app_tranz a on b.merchantref = a.txnref						left join coralpay_tranz c on a.txnref = c.txnref
 join nibbs_tranz n on b.transaction_id = n.transaction_id;			left join irecharge_tranz i on a.txnref = i.txnref
-																	where a.transaction_type <> 'bank_transfer' and c.txnref is null and i.txnref is null;
+																	where a.transaction_type <> 'bank_transfer' and
+																	c.txnref is null and i.txnref is null;
+
 
 ```
 
 ## Summary of Findings
-•	28,750 bank transfers initiated in the app successfully flows through Banklink and reaches NIBBS for final settlement
-•	Total value of the orphaned (app transfer) transactions is 135,193,832 (customer money that is stuck)
-•	81% success rate of transactions seen across the 3 services 
-•	Utility transactions are processed by either Coralpay or Irecharge. 
-•	Value of missing (orphaned) utility payments is 49,188,778
-•	There are 93 duplicate utility transactions that is seen in Coralpay channel. The value is 4,796,950
-•	The total value of transactions with status discrepancies is 65,553,947 (money that was never actually received). 
-•	Irecharge provider has the most missing transactions and the most status mismatches
-•	The rate of transaction failure in coralpay is slightly higher than that of irecharge with 0.2%
-•	12530 transactions have reconciliation issues. This is about 15.7% of the total transactions processed
-•	Unreconciled transaction is over 270million naira in volume.
-•	Transaction failure times are higher by 1pm and lowest by 6pm
-•	Transaction issues do not correlate with transaction volume spike, as we have more issues on Thursdays and 
+-	28,750 bank transfers initiated in the app successfully flows through Banklink and reaches NIBBS for final settlement
+-	Total value of the orphaned (app transfer) transactions is 135,193,832 (customer money that is stuck)
+-	81% success rate of transactions seen across the 3 services 
+-	Utility transactions are processed by either Coralpay or Irecharge. 
+-	Value of missing (orphaned) utility payments is 49,188,778
+-	There are 93 duplicate utility transactions that is seen in Coralpay channel. The value is 4,796,950
+-	The total value of transactions with status discrepancies is 65,553,947 (money that was never actually received). 
+-	Irecharge provider has the most missing transactions and the most status mismatches
+-	The rate of transaction failure in coralpay is slightly higher than that of irecharge with 0.2%
+-	12530 transactions have reconciliation issues. This is about 15.7% of the total transactions processed
+-	Unreconciled transaction is over 270million naira in volume.
+-	Transaction failure times are higher by 1pm and lowest by 6pm
+-	Transaction issues do not correlate with transaction volume spike, as we have more issues on Thursdays and 
 more transactions on Tuesdays
 
 
 ## Recommendations
-•	Implement automated end-to-end transaction tracking across App → Banklink → NIBBS to immediately flag 
+-	Implement automated end-to-end transaction tracking across App → Banklink → NIBBS to immediately flag 
 transactions that do not reach final settlement, in order to address orphaned & stuck fund
-•	Introduce time-based escalation rules (e.g., auto-alert if a transaction is not completed within specified minutes)
-•	Create an automated reversal/refund workflow for orphaned transactions to prevent prolonged customer fund lock-up.
-•	Prioritize recovery of the ₦135M App-transfer orphaned funds and ₦49M missing utility payments due to 
+-	Introduce time-based escalation rules (e.g., auto-alert if a transaction is not completed within specified minutes)
+-	Create an automated reversal/refund workflow for orphaned transactions to prevent prolonged customer fund lock-up.
+-	Prioritize recovery of the ₦135M App-transfer orphaned funds and ₦49M missing utility payments due to 
 direct customer impact and regulatory risk.
-•	Set a minimum acceptable success-rate SLA (e.g., ≥97%) across all services, to improve the current 81% rate
-•	Introduce retry logic with idempotency keys to reduce failures caused by transient network or provider issues.
-•	Enforce duplicate transaction checks (txnref + amount + time) at the Coralpay entry point to eliminate repeat 
+-	Set a minimum acceptable success-rate SLA (e.g., ≥97%) across all services, to improve the current 81% rate
+-	Introduce retry logic with idempotency keys to reduce failures caused by transient network or provider issues.
+-	Enforce duplicate transaction checks (txnref + amount + time) at the Coralpay entry point to eliminate repeat 
 postings.
-•	Immediately reconcile and resolve the 93 duplicate Coralpay transactions (₦4.8M) and strengthen validation 
+-	Immediately reconcile and resolve the 93 duplicate Coralpay transactions (₦4.8M) and strengthen validation 
 rules.
-•	Conduct a deep technical and operational review of Irecharge, as it has:
-o	the highest number of missing transactions
-o	the most status mismatches
-•	Enforce stricter SLAs and penalties for reconciliation failures with Irecharge.
-•	Proactively notify customers for delayed or failed transactions and provide clear timelines for resolution.
-•	Implement status validation checks before marking transactions as “successful” in customer-facing channels.
-•	Immediately investigate the ₦65.5M worth of transactions marked successful but never received, as this poses financial and reputational risk.
-•	Increase system monitoring, capacity, and support staffing around 1pm, when failures peak.
-•	Since transaction issues do not correlate with volume, shift focus from scaling capacity to process and provider reliability, especially on Thursdays
+-	Conduct a deep technical and operational review of Irecharge, as it has:
+	-	the highest number of missing transactions
+	-	the most status mismatches
+-	Enforce stricter SLAs and penalties for reconciliation failures with Irecharge.
+-	Proactively notify customers for delayed or failed transactions and provide clear timelines for resolution.
+-	Implement status validation checks before marking transactions as “successful” in customer-facing channels.
+-	Immediately investigate the ₦65.5M worth of transactions marked successful but never received, as this poses financial and reputational risk.
+-	Increase system monitoring, capacity, and support staffing around 1pm, when failures peak.
+-	Since transaction issues do not correlate with volume, shift focus from scaling capacity to process and provider reliability, especially on Thursdays
 
 ## Tools & Technologies
 -	SQL (MySQL)
