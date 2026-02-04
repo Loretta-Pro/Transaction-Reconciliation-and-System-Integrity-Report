@@ -39,13 +39,15 @@ This project focuses on reconciling transaction data to evaluate the effectivene
 	
 ## Sample Snippets
 ```sql
-select count(distinct b.transaction_id) as app_banklink_nibbs		select a.txnref as orphaned_utility, a.transaction_type, 
-from banklink_tranz b												       a.amount, a.status, a.provider from app_tranz a
-join app_tranz a on b.merchantref = a.txnref						left join coralpay_tranz c on a.txnref = c.txnref
-join nibbs_tranz n on b.transaction_id = n.transaction_id;			left join irecharge_tranz i on a.txnref = i.txnref
-																	where a.transaction_type <> 'bank_transfer' and
-																	c.txnref is null and i.txnref is null;
-
+with monthly_issues as													        		select a.txnref as orphaned_utility, a.transaction_type, 
+(			    												        					 	a.amount, a.status, a.provider from app_tranz a
+select date(`date`) as `month`, monthname(`date`) as month_name, 						left join coralpay_tranz c on a.txnref = c.txnref
+	count(distinct txnref) as loss_count from lost_revenue								left join irecharge_tranz i on a.txnref = i.txnref
+group by date(`date`), monthname(`date`)												where a.transaction_type <> 'bank_transfer' and
+order by date(`date`) desc																c.txnref is null and i.txnref is null;
+)
+select month_name, sum(loss_count) as no_of_issues from monthly_issues
+group by month_name order by no_of_issues desc;
 
 ```
 
